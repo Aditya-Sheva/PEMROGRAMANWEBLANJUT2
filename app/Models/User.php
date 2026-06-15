@@ -1,32 +1,27 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasRoles, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $fillable = [
+        'name','email','password','role','is_active'
+    ];
+
+    protected $hidden = ['password','remember_token'];
+
+    protected $casts = ['email_verified_at' => 'datetime', 'is_active' => 'boolean'];
+
+    public function proposals() { return $this->hasMany(Proposal::class); }
+    public function reviews()   { return $this->hasMany(Review::class, 'reviewer_id'); }
+    public function isSecretary(): bool { return $this->hasRole('sekretariat') || $this->role === 'sekretariat'; }
+    public function isReviewer(): bool  { return $this->hasRole('reviewer') || $this->role === 'reviewer'; }
+    public function isPeneliti(): bool  { return $this->hasRole('peneliti') || $this->role === 'peneliti'; }
+    public function isAdmin(): bool     { return $this->hasRole('admin') || $this->role === 'admin'; }
+    public function isKetua(): bool     { return $this->hasRole('ketua') || $this->role === 'ketua'; }
 }
