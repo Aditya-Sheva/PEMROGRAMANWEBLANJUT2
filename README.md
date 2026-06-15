@@ -64,3 +64,70 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Spatie Laravel Permission (Project Setup)
+
+Package `spatie/laravel-permission` sudah terpasang pada project ini.
+
+### 1) User Model
+
+`app/Models/User.php` sudah menggunakan trait:
+
+```php
+use Spatie\Permission\Traits\HasRoles;
+
+class User extends Authenticatable
+{
+    use HasRoles;
+}
+```
+
+### 2) Migration + Seeder
+
+- Migration permission tables: `database/migrations/2026_04_20_101156_create_permission_tables.php`
+- Seeder role/permission + assign ke user: `database/seeders/DatabaseSeeder.php`
+
+Jalankan:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+### 3) Contoh penggunaan (Tinker / kode)
+
+```php
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+// buat role
+Role::findOrCreate('admin', 'web');
+
+// buat permission
+Permission::findOrCreate('edit products', 'web');
+
+// assign permission ke role
+$role = Role::findByName('admin', 'web');
+$role->givePermissionTo('edit products');
+
+// assign role ke user
+$user->assignRole('admin');
+```
+
+### 4) Cek di Blade / Controller
+
+Contoh Blade:
+
+```blade
+@role('admin')
+    <p>Ini hanya untuk admin</p>
+@endrole
+```
+
+Contoh Controller:
+
+```php
+if ($user->can('edit products')) {
+    // boleh akses
+}
+```
